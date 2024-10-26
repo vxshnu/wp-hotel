@@ -31,10 +31,4 @@
     do_action('after_payment',$bookingid);
  }
 
-//  function activate_hotel_payment_portal() {
-//     add_action('init', 'hotel_payment_process', 1);
-// }
-
-// register_activation_hook(__FILE__, 'activate_hotel_payment_portal');
-
 add_action('init', 'hotel_payment_process', 1);
