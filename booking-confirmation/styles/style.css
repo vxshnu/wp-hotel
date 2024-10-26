@@ -1,0 +1,63 @@
+.receipt {
+    border: 1px solid #ccc; /* Light gray border */
+    border-radius: 5px; /* Rounded corners */
+    padding: 20px; /* Padding inside the box */
+    margin: 20px auto; /* Center the div horizontally */
+    background-color: #f9f9f9; /* Light background color */
+    font-family: Arial, sans-serif; /* Font style */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    width: 90%; /* Increased width for the receipt */
+    max-width: 800px; /* Optional: Set a maximum width */
+}
+
+.receipt h2 {
+    color: #333; /* Darker text for the header */
+    font-size: 45px;
+    margin: 20px 0 15px; /* Reduced margin-top to 5px, bottom remains 15px */
+    text-align: center;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+.receipt p {
+    color: #555; /* Dark gray text for paragraphs */
+    line-height: 1.5; /* Improved line height for readability */
+}
+
+.receipt strong {
+    color: #000; /* Black color for strong text */
+}
+
+#hotel-logo {
+    width: 10%;
+    display: block; /* Ensure the logo is treated as a block element */
+    margin: 0 auto 20px; /* Center the logo */
+}
+
+#phno{
+    display: inline;
+}
+
+.hotel-info{
+    border-bottom: 2px solid black;
+    text-align: center; 
+    margin-bottom: 20px;
+}
+
+.reservation-details{
+    width: 100%;
+    border-bottom: 2px solid black;
+}
+
+.page-end{
+    border-bottom: 2px solid black;
+    text-align: left; 
+    padding-left: 20px; 
+    font-size: 14px;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+.page-mid{
+    text-align: left; 
+    padding-left: 20px; 
+    font-size: 18px;
+}
