@@ -1,36 +1,36 @@
 .receipt {
-    border: 1px solid #ccc; /* Light gray border */
-    border-radius: 5px; /* Rounded corners */
-    padding: 20px; /* Padding inside the box */
-    margin: 20px auto; /* Center the div horizontally */
-    background-color: #f9f9f9; /* Light background color */
-    font-family: Arial, sans-serif; /* Font style */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-    width: 90%; /* Increased width for the receipt */
-    max-width: 800px; /* Optional: Set a maximum width */
+    border: 1px solid #ccc; 
+    border-radius: 5px;
+    padding: 20px;
+    margin: 20px auto; 
+    background-color: #f9f9f9;
+    font-family: Arial, sans-serif; 
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); 
+    width: 90%; 
+    max-width: 800px;
 }
 
 .receipt h2 {
-    color: #333; /* Darker text for the header */
+    color: #333; 
     font-size: 45px;
-    margin: 20px 0 15px; /* Reduced margin-top to 5px, bottom remains 15px */
+    margin: 20px 0 15px;
     text-align: center;
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }
 
 .receipt p {
-    color: #555; /* Dark gray text for paragraphs */
-    line-height: 1.5; /* Improved line height for readability */
+    color: #555;
+    line-height: 1.5; 
 }
 
 .receipt strong {
-    color: #000; /* Black color for strong text */
+    color: #000;
 }
 
 #hotel-logo {
     width: 10%;
-    display: block; /* Ensure the logo is treated as a block element */
-    margin: 0 auto 20px; /* Center the logo */
+    display: block; 
+    margin: 0 auto 20px; 
 }
 
 #phno{
