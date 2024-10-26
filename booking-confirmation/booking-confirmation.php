@@ -149,11 +149,10 @@ function send_mail($bookingid, $name, $email, $phno, $amount, $rooms, $from, $ti
     $headers = array('Content-Type: text/html; charset=UTF-8');
     //use an appropriate mail plugin from wordpress
     wp_mail($email, $subject, $message, $headers);
-
 }
 
 //displays the receipt
-function display_receipt($bookingid, $name, $phno, $amount, $rooms, $from, $to) {
+function display_receipt($bookingid, $name, $phno, $amount, $rooms, $from, $till) {
     $css_url = plugins_url('styles/style.css', __FILE__);
     echo '<link rel="stylesheet" type="text/css" href="' . esc_url($css_url) . '">';
     echo "<div class='receipt'>"; 
@@ -172,11 +171,11 @@ function display_receipt($bookingid, $name, $phno, $amount, $rooms, $from, $to) 
     echo "<h2 style='text-align: center;'>RECEIPT</h2>"; 
     echo "<div style='text-align: left; padding-left: 20px; font-size: 18px;'>";
     echo "<p><strong>Booking ID:</strong> {$bookingid}</p>";
-    echo "<p style='display:inline; margin-right: 40%;'><strong>Name:</strong> {$name} </p>";
+    echo "<p style='display:inline; margin-right: 53%;'><strong>Name:</strong> {$name} </p>";
     echo "<p id='phno'><strong>Phone Number:</strong> <span>{$phno}</span></p>";
     echo "<p><strong>Total number of rooms booked:</strong> {$rooms}</p>";
     echo "<p><strong>From Date:</strong> {$from}</p>"; 
-    echo "<p><strong>Till Date:</strong> {$to}</p>";
+    echo "<p><strong>Till Date:</strong> {$till}</p>";
     //get the reserved room ids
     $reserved_rooms = fetch_reserved_rooms($bookingid);
     echo "<p><strong>Room Number:</strong> " . implode(", ", $reserved_rooms) . "</p>";
