@@ -19,10 +19,10 @@ function payment()
        <script>
           setTimeout(function() {
              window.location.href = '/receipt'; // Replace with your desired URL
-          }, 4000);
+          }, 3000);
        </script>
     </head>
-    <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh;'>
+    <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 90vh;'>
        <div style='text-align: center; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);'>
           <h1 style='font-size: 24px; margin-bottom: 20px;'>Processing Your Payment</h1>
           <div style='border: 8px solid #f3f3f3; border-top: 8px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 20px auto;'></div>
@@ -43,7 +43,7 @@ function payment()
 
 function after_successful_payment(){
    $name = "Vishnu";
-   $email = "creativenarayanan8690@gmail.com";
+   $email = "vishnunarayanan8690@gmail.com";
    $phno = "0987654321";
    $amount = 1000;
    $rooms = 4;
@@ -105,5 +105,5 @@ function hotel_payment_process( $name, $email, $phno, $amount, $rooms, $from, $t
 
 add_shortcode('payment','payment');
 
-// after_successful_payment();
+after_successful_payment();
 // add_action('init', 'after_successful_payment', 1);

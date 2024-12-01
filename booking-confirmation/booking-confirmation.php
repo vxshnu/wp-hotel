@@ -147,7 +147,7 @@ function send_mail($bookingid, $name, $email, $phno, $amount, $rooms, $from, $ti
     </body>
     </html>";
     $headers = array('Content-Type: text/html; charset=UTF-8');
-    //use an appropriate mail plugin from wordpress
+    //use an appropriate mail plugin from wordpressK
     wp_mail($email, $subject, $message, $headers);
 }
 
