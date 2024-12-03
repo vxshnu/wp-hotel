@@ -3,7 +3,7 @@
  * Plugin Name: Room Booking
  * Description: Hotel Room Booking with Payment Integration
  * Author: Nikita Anna Ajith
- * Version: 1.3.1
+ * Version: 1.5.0
  */
 
 if (!defined('ABSPATH')) {
@@ -31,28 +31,35 @@ function display_room_booking_form() {
     }
 
     $output = "
-        <div style='max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;'>
+        <div class='room-booking-container'>
             <h2>Book Your Stay at {$room_details['room_type']}</h2>
+            <img src='{$room_details['image_url']}' alt='{$room_details['room_type']}' class='room-image'>
             <p><strong>Description:</strong> {$room_details['description']}</p>
+            <p><strong>Beds:</strong> {$room_details['beds']}</p>
+            <p><strong>Amenities:</strong> {$room_details['amenities']}</p>
             <p><strong>Price per Night:</strong> \${$room_details['price_per_night']}</p>
-            <form style='max-width:550px;' class='details-form'>
-                <label>Check-in Date:</label>
-                <input style='max-width:530px;' type='date' name='check_in' required><br>
-                <label>Check-out Date:</label>
-                <input style='max-width:530px;' type='date' name='check_out' required><br>
-                <label>Name:</label>
-                <input type='text' name='name' required><br>
-                <label>Phone:</label>
-                <input type='text' name='phone' required><br>
-                <label>Email:</label>
-                <input style='max-width:530px;' type='email' name='email' required><br>
-                <label>Number of Guests:</label>
-                <input type='number' name='guests' min='1' required><br>
-                <label>Special Requirements:</label>
-                <textarea name='special_requirements'></textarea><br>
+            <p><strong>Max Occupancy:</strong> {$room_details['max_occupancy']} guests</p>
+            <form class='details-form'>
+                <div class='form-group'>
+                    <label>Check-in Date:</label>
+                    <input type='date' name='check_in' required>
+                </div>
+                <div class='form-group'>
+                    <label>Check-out Date:</label>
+                    <input type='date' name='check_out' required>
+                </div>
+                <div class='form-group'>
+                    <label>Number of Guests:</label>
+                    <input type='number' name='guests' min='1' max='{$room_details['max_occupancy']}' required>
+                </div>
+                <div class='form-group'>
+                    <label>Special Requests:</label>
+                    <textarea name='special_requests' placeholder='Enter any special requirements'></textarea>
+                </div>
                 <input type='hidden' name='room_id' value='{$room_id}'>
                 <input type='hidden' name='price_per_night' value='{$room_details['price_per_night']}'>
-                <button type='submit' class='submit-booking' style='background-color: #0073aa; color: #fff; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;'>Confirm Booking</button>
+                <input type='hidden' name='max_occupancy' value='{$room_details['max_occupancy']}'>
+                <button type='submit' class='submit-booking'>Confirm Booking</button>
             </form>
             <div class='ajax-response'></div>
         </div>
@@ -65,39 +72,40 @@ function display_room_booking_form() {
 function handle_room_booking_ajax() {
     global $wpdb;
 
-    // Start the session to access session variables
     if (!session_id()) {
         session_start();
     }
 
-    // Retrieve the user_id from session
     $user_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : 0;
 
-    // Check if the user is logged in via the session
     if ($user_id === 0) {
         wp_send_json_error(['message' => 'You must log in to make a booking.']);
         return;
     }
-    $name = sanitize_text_field($_POST['name']);
-    $phone = sanitize_text_field($_POST['phone']);
-    $email = sanitize_email($_POST['email']);
+
     $check_in = sanitize_text_field($_POST['check_in']);
     $check_out = sanitize_text_field($_POST['check_out']);
     $guests = intval($_POST['guests']);
-    $special_requirements = sanitize_textarea_field($_POST['special_requirements']);
+    $special_requests = sanitize_textarea_field($_POST['special_requests']);
     $room_id = intval($_POST['room_id']);
     $price_per_night = floatval($_POST['price_per_night']);
+    $max_occupancy = intval($_POST['max_occupancy']);
+
+    if ($guests > $max_occupancy) {
+        wp_send_json_error(['message' => 'The number of guests exceeds the maximum occupancy of the room.']);
+        return;
+    }
 
     $days = (strtotime($check_out) - strtotime($check_in)) / 86400;
     if ($days <= 0) {
         wp_send_json_error(['message' => 'Invalid check-in and check-out dates.']);
     }
+
     $room_charges = $price_per_night * $days;
     $tax = $room_charges * 0.1;
     $additional_fees = 50;
     $total_cost = $room_charges + $tax + $additional_fees;
 
-    // Insert booking into database
     $wpdb->insert(
         'Bookings',
         [
@@ -107,7 +115,7 @@ function handle_room_booking_ajax() {
             'check_out_date' => $check_out,
             'total_cost' => $total_cost,
             'status' => 'confirmed',
-            'special_requests' => $special_requirements,
+            'special_requests' => $special_requests,
             'created_at' => current_time('mysql'),
             'updated_at' => current_time('mysql'),
         ],
@@ -116,7 +124,6 @@ function handle_room_booking_ajax() {
 
     $booking_id = $wpdb->insert_id;
 
-    // Redirect to the payment portal with the booking ID as a query parameter
     $redirect_url = add_query_arg([
         'booking_id' => $booking_id,
     ], home_url('/payment-gateway/'));
@@ -133,6 +140,8 @@ function enqueue_custom_scripts() {
     wp_localize_script('room-booking-ajax', 'roomBookingAjax', [
         'ajax_url' => admin_url('admin-ajax.php'),
     ]);
+
+    wp_enqueue_style('room-booking-style', plugin_dir_url(__FILE__) . 'room-booking-style.css');
 }
 add_action('wp_enqueue_scripts', 'enqueue_custom_scripts');
 

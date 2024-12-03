@@ -2,7 +2,7 @@
 /*
 Plugin Name: Custom Login and Registration
 Description: Provides custom user login, registration, and role-based redirection using the custom Users table.
-Version: 1.3
+Version: 1.4
 Author: Karol Monsy
 */
 
@@ -26,19 +26,20 @@ add_action('wp_enqueue_scripts', 'login_enqueue_assets');
 // Combined Login and Registration Form Shortcode
 function login_combined_form() {
     if (isset($_SESSION['user_id'])) {
-        return "<p>You are already logged in as " . esc_html($_SESSION['username']) . ". <a href='" . esc_url(home_url('?action=logout')) . "'>Logout</a></p>";
+        wp_redirect(home_url('/booking-management/'));
+        exit;
     }
 
     ob_start();
     ?>
-    <div id="auth-forms" style="text-align: center; font-family: Arial, sans-serif;">
-        <div>
-            <button id="show-login" style="margin: 5px; padding: 10px; cursor: pointer;">Login</button>
-            <button id="show-registration" style="margin: 5px; padding: 10px; cursor: pointer;">Register</button>
+    <div id="auth-container" style="text-align: center; font-family: Arial, sans-serif;">
+        <div class="auth-tabs" style="margin-bottom: 20px;">
+            <button id="show-login" class="auth-tab-button active">Login</button>
+            <button id="show-registration" class="auth-tab-button">Register</button>
         </div>
 
-        <div id="login-form-container" style="display: none; margin-top: 20px;">
-            <form id="login_form">
+        <div id="login-form-container" class="auth-form" style="display: block;">
+            <form id="login_form" class="auth-form-inner">
                 <input type="text" name="username" placeholder="Username or Email" required>
                 <input type="password" name="password" placeholder="Password" required>
                 <button type="button" id="login_submit_button">Login</button>
@@ -46,8 +47,8 @@ function login_combined_form() {
             </form>
         </div>
 
-        <div id="registration-form-container" style="display: none; margin-top: 20px;">
-            <form id="registration_form">
+        <div id="registration-form-container" class="auth-form" style="display: none;">
+            <form id="registration_form" class="auth-form-inner">
                 <input type="email" name="email" placeholder="Email" required>
                 <input type="password" name="password1" placeholder="Password" required>
                 <input type="text" name="first_name" placeholder="First Name" required>

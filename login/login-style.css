@@ -8,38 +8,70 @@ body {
     margin: 0;
 }
 
-form {
-    max-width: 300px;
+#auth-container {
+    max-width: 400px;
     width: 100%;
     padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    border: 1px solid #ccc;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
-    background-color: white;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-form input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 16px;
+.auth-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
 }
 
-form button {
-    width: 100%;
+.auth-tab-button {
+    flex: 1;
     padding: 10px;
     background-color: #0073aa;
     color: white;
+    border: none;
+    border-radius: 4px;
+    margin: 0 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.auth-tab-button.active,
+.auth-tab-button:hover {
+    background-color: #005a87;
+}
+
+.auth-form-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.auth-form-inner input,
+.auth-form-inner textarea {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
     font-size: 16px;
+}
+
+.auth-form-inner button {
+    padding: 10px;
+    background-color: #0073aa;
+    color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-form button:hover {
+.auth-form-inner button:hover {
     background-color: #005a87;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.auth-form-inner p {
+    font-size: 14px;
+    color: red;
+    margin: 0;
+    text-align: left;
 }

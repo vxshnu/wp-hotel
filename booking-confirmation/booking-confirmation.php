@@ -137,7 +137,7 @@ function display_receipt($booking_id, $name, $phone, $total_cost, $rooms, $check
     echo '<link rel="stylesheet" type="text/css" href="' . esc_url($css_url) . '">';
 
     $image_url = plugins_url('styles/hotel-png-11554023271eafhegd6i5.png', __FILE__);
-    echo "<div class='receipt' style='max-width: 900px; margin: 20px auto; padding: 20px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); font-family: Arial, sans-serif;'>";
+    echo "<div class='receipt' style='position:relative ;top:7% ; max-width: 900px; margin: 20px auto; padding: 20px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); font-family: Arial, sans-serif;'>";
 
     // Logo and Hotel Information
     echo "<div class='hotel-header' style='text-align: center; margin-bottom: 20px;'>";

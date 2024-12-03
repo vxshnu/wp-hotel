@@ -233,31 +233,35 @@ function display_room_details_section() {
 
     // Add Room Form
     echo '<h3>Add New Room</h3>';
-    echo '<form method="post" style="max-width: 600px; margin: 0 auto;">';
-    echo '<label>Room Type:</label> <input type="text" name="room_type" required><br>';
-    echo '<label>Description:</label> <textarea name="description" required></textarea><br>';
-    echo '<label>Amenities:</label> <input type="text" name="amenities"><br>';
-    echo '<label>Price Per Night:</label> <input type="number" step="0.01" name="price_per_night" required><br>';
-    echo '<label>Max Occupancy:</label> <input type="number" name="max_occupancy" required><br>';
-    echo '<button type="submit" name="add_room">Add Room</button>';
+    echo '<form method="post" enctype="multipart/form-data" style="max-width: 800px; margin: 20px auto; background: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);">';
+    echo '<label>Room Type:</label> <input type="text" name="room_type" required style="width: 100%; margin-bottom: 15px;"><br>';
+    echo '<label>Beds:</label> <input type="number" name="beds" required style="width: 100%; margin-bottom: 15px;"><br>';
+    echo '<label>Description:</label> <textarea name="description" required style="width: 100%; margin-bottom: 15px;"></textarea><br>';
+    echo '<label>Amenities (comma-separated):</label> <input type="text" name="amenities" style="width: 100%; margin-bottom: 15px;"><br>';
+    echo '<label>Price Per Night:</label> <input type="number" step="0.01" name="price_per_night" required style="width: 100%; margin-bottom: 15px;"><br>';
+    echo '<label>Max Occupancy:</label> <input type="number" name="max_occupancy" required style="width: 100%; margin-bottom: 15px;"><br>';
+    echo '<label>Image URL:</label> <input type="url" name="image_url" style="width: 100%; margin-bottom: 15px;"><br>';
+    echo '<button type="submit" name="add_room" style="padding: 10px 20px; background-color: #0073aa; color: white; border: none; border-radius: 4px;">Add Room</button>';
     echo '</form>';
 
     if (isset($_POST['add_room'])) {
         // Sanitize and insert data into the database
         $wpdb->insert('Rooms', [
             'room_type' => sanitize_text_field($_POST['room_type']),
+            'beds' => intval($_POST['beds']),
             'description' => sanitize_textarea_field($_POST['description']),
             'amenities' => sanitize_text_field($_POST['amenities']),
             'price_per_night' => floatval($_POST['price_per_night']),
             'max_occupancy' => intval($_POST['max_occupancy']),
+            'image_url' => esc_url_raw($_POST['image_url']),
         ]);
-        echo '<p>New room added successfully!</p>';
+        echo '<p style="color: green;">New room added successfully!</p>';
     }
 
     // Fetch and display room management options
-    $rooms = $wpdb->get_results("SELECT * FROM Rooms LIMIT 100");
+    $rooms = $wpdb->get_results("SELECT * FROM Rooms ORDER BY room_id ASC LIMIT 100");
     echo '<h3>Manage Existing Rooms</h3>';
-    echo '<form method="post" style="max-width: 600px; margin: 0 auto;"><select name="room_id" onchange="this.form.submit()">';
+    echo '<form method="post" style="max-width: 800px; margin: 20px auto;"><select name="room_id" onchange="this.form.submit()" style="width: 100%; margin-bottom: 15px;">';
     echo '<option value="">Choose a room...</option>';
     foreach ($rooms as $room) {
         echo "<option value='{$room->room_id}' " . selected($_POST['room_id'], $room->room_id, false) . ">Room {$room->room_id} - {$room->room_type}</option>";
@@ -267,15 +271,17 @@ function display_room_details_section() {
     if (!empty($_POST['room_id'])) {
         $room = $wpdb->get_row($wpdb->prepare("SELECT * FROM Rooms WHERE room_id = %d", intval($_POST['room_id'])));
         if ($room) {
-            echo '<h3>Edit Room</h3><form method="post" style="max-width: 600px; margin: 0 auto;">';
+            echo '<h3>Edit Room</h3><form method="post" enctype="multipart/form-data" style="max-width: 800px; margin: 20px auto; background: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);">';
             echo "<input type='hidden' name='room_id' value='{$room->room_id}'>";
-            echo '<label>Room Type:</label> <input type="text" name="room_type" value="' . esc_attr($room->room_type) . '" required><br>';
-            echo '<label>Description:</label> <textarea name="description" required>' . esc_textarea($room->description) . '</textarea><br>';
-            echo '<label>Amenities:</label> <input type="text" name="amenities" value="' . esc_attr($room->amenities) . '"><br>';
-            echo '<label>Price Per Night:</label> <input type="number" step="0.01" name="price_per_night" value="' . esc_attr($room->price_per_night) . '" required><br>';
-            echo '<label>Max Occupancy:</label> <input type="number" name="max_occupancy" value="' . esc_attr($room->max_occupancy) . '" required><br>';
-            echo '<button type="submit" name="update_room">Update Room</button>';
-            echo '<button type="submit" name="delete_room" onclick="return confirm(\'Are you sure you want to delete this room?\')">Delete Room</button>';
+            echo '<label>Room Type:</label> <input type="text" name="room_type" value="' . esc_attr($room->room_type) . '" required style="width: 100%; margin-bottom: 15px;"><br>';
+            echo '<label>Beds:</label> <input type="number" name="beds" value="' . esc_attr($room->beds) . '" required style="width: 100%; margin-bottom: 15px;"><br>';
+            echo '<label>Description:</label> <textarea name="description" required style="width: 100%; margin-bottom: 15px;">' . esc_textarea($room->description) . '</textarea><br>';
+            echo '<label>Amenities (comma-separated):</label> <input type="text" name="amenities" value="' . esc_attr($room->amenities) . '" style="width: 100%; margin-bottom: 15px;"><br>';
+            echo '<label>Price Per Night:</label> <input type="number" step="0.01" name="price_per_night" value="' . esc_attr($room->price_per_night) . '" required style="width: 100%; margin-bottom: 15px;"><br>';
+            echo '<label>Max Occupancy:</label> <input type="number" name="max_occupancy" value="' . esc_attr($room->max_occupancy) . '" required style="width: 100%; margin-bottom: 15px;"><br>';
+            echo '<label>Image URL:</label> <input type="url" name="image_url" value="' . esc_url($room->image_url) . '" style="width: 100%; margin-bottom: 15px;"><br>';
+            echo '<button type="submit" name="update_room" style="padding: 10px 20px; background-color: #0073aa; color: white; border: none; border-radius: 4px; margin-right: 10px;">Update Room</button>';
+            echo '<button type="submit" name="delete_room" onclick="return confirm(\'Are you sure you want to delete this room?\')" style="padding: 10px 20px; background-color: #dc3545; color: white; border: none; border-radius: 4px;">Delete Room</button>';
             echo '</form>';
         }
     }
@@ -284,20 +290,23 @@ function display_room_details_section() {
         // Update room details
         $wpdb->update('Rooms', [
             'room_type' => sanitize_text_field($_POST['room_type']),
+            'beds' => intval($_POST['beds']),
             'description' => sanitize_textarea_field($_POST['description']),
             'amenities' => sanitize_text_field($_POST['amenities']),
             'price_per_night' => floatval($_POST['price_per_night']),
             'max_occupancy' => intval($_POST['max_occupancy']),
+            'image_url' => esc_url_raw($_POST['image_url']),
         ], ['room_id' => intval($_POST['room_id'])]);
-        echo '<p>Room updated successfully!</p>';
+        echo '<p style="color: green;">Room updated successfully!</p>';
     }
 
     if (isset($_POST['delete_room'])) {
         // Delete room
         $wpdb->delete('Rooms', ['room_id' => intval($_POST['room_id'])]);
-        echo '<p>Room deleted successfully!</p>';
+        echo '<p style="color: red;">Room deleted successfully!</p>';
     }
 }
+
 
 
 

@@ -1,0 +1,73 @@
+.room-booking-container {
+    min-width: 700px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+}
+
+.room-booking-container h2 {
+    margin-bottom: 10px;
+    font-size: 24px;
+    color: #0073aa;
+}
+
+.room-booking-container p {
+    margin-bottom: 20px;
+    color: #555;
+}
+
+.details-form .form-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.details-form .form-group label {
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.details-form input,
+.details-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.details-form input[type="date"] {
+    width: calc(100% - 20px); /* Slight padding adjustment */
+    max-width: 300px; /* Maximum width for date inputs */
+}
+
+.details-form textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.submit-booking {
+    width: 100%;
+    padding: 10px;
+    background-color: #0073aa;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.submit-booking:hover {
+    background-color: #005f8a;
+}
+
+.room-booking-container img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}

@@ -1,0 +1,29 @@
+#booking-dashboard table th,
+#booking-dashboard table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.modify-booking,
+.cancel-booking {
+    display: inline-block;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    background-color: #0073aa;
+    color: white;
+    cursor: pointer;
+    width: 120px;
+}
+
+.modify-booking:hover,
+.cancel-booking:hover {
+    background-color: #005f8a;
+}
+
+#heading2 {
+    color: #005f8a;
+    text-align: center;
+    padding-top: 20px;
+    margin-bottom: 20px;
+}
