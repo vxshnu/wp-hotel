@@ -1,22 +1,19 @@
-/* Add this CSS to your plugin's stylesheet or in the WordPress customizer */
-
 body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    background-color: #f9f9f9;
 }
 
-/* Style for the login and registration forms */
-#login_form, #registration_form {
+form {
     max-width: 300px;
     width: 100%;
     padding: 20px;
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 15px;
     border: 1px solid #ccc;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -24,11 +21,7 @@ body {
     background-color: white;
 }
 
-#login_form input[type='text'],
-#login_form input[type='password'],
-#registration_form input[type='email'],
-#registration_form input[type='text'],
-#registration_form input[type='password'] {
+form input {
     width: 100%;
     padding: 10px;
     border: 1px solid #ccc;
@@ -36,7 +29,7 @@ body {
     font-size: 16px;
 }
 
-#login_form button, #registration_form button {
+form button {
     width: 100%;
     padding: 10px;
     background-color: #0073aa;
@@ -47,6 +40,6 @@ body {
     cursor: pointer;
 }
 
-#login_form button:hover, #registration_form button:hover {
+form button:hover {
     background-color: #005a87;
 }

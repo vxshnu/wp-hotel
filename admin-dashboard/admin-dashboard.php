@@ -233,66 +233,73 @@ function display_room_details_section() {
 
     // Add Room Form
     echo '<h3>Add New Room</h3>';
-    echo '<form method="post">';
+    echo '<form method="post" style="max-width: 600px; margin: 0 auto;">';
     echo '<label>Room Type:</label> <input type="text" name="room_type" required><br>';
     echo '<label>Description:</label> <textarea name="description" required></textarea><br>';
     echo '<label>Amenities:</label> <input type="text" name="amenities"><br>';
-    echo '<label>Price:</label> <input type="number" step="0.01" name="price" required><br>';
+    echo '<label>Price Per Night:</label> <input type="number" step="0.01" name="price_per_night" required><br>';
     echo '<label>Max Occupancy:</label> <input type="number" name="max_occupancy" required><br>';
     echo '<button type="submit" name="add_room">Add Room</button>';
     echo '</form>';
 
     if (isset($_POST['add_room'])) {
-        $wpdb->insert('hotel_rooms', [
+        // Sanitize and insert data into the database
+        $wpdb->insert('Rooms', [
             'room_type' => sanitize_text_field($_POST['room_type']),
             'description' => sanitize_textarea_field($_POST['description']),
             'amenities' => sanitize_text_field($_POST['amenities']),
-            'price' => floatval($_POST['price']),
+            'price_per_night' => floatval($_POST['price_per_night']),
             'max_occupancy' => intval($_POST['max_occupancy']),
         ]);
         echo '<p>New room added successfully!</p>';
     }
 
-    // Room Update/Delete Form
-    $rooms = $wpdb->get_results("SELECT * FROM hotel_rooms LIMIT 100");
+    // Fetch and display room management options
+    $rooms = $wpdb->get_results("SELECT * FROM Rooms LIMIT 100");
     echo '<h3>Manage Existing Rooms</h3>';
-    echo '<form method="post"><select name="room_id" onchange="this.form.submit()">';
+    echo '<form method="post" style="max-width: 600px; margin: 0 auto;"><select name="room_id" onchange="this.form.submit()">';
     echo '<option value="">Choose a room...</option>';
     foreach ($rooms as $room) {
-        echo "<option value='{$room->id}' " . selected($_POST['room_id'], $room->id, false) . ">Room {$room->id} - {$room->room_type}</option>";
+        echo "<option value='{$room->room_id}' " . selected($_POST['room_id'], $room->room_id, false) . ">Room {$room->room_id} - {$room->room_type}</option>";
     }
     echo '</select></form>';
 
     if (!empty($_POST['room_id'])) {
-        $room = $wpdb->get_row("SELECT * FROM hotel_rooms WHERE id = " . intval($_POST['room_id']));
-        echo '<h3>Edit Room</h3><form method="post">';
-        echo "<input type='hidden' name='room_id' value='{$room->id}'>";
-        echo '<label>Room Type:</label> <input type="text" name="room_type" value="' . esc_attr($room->room_type) . '" required><br>';
-        echo '<label>Description:</label> <textarea name="description" required>' . esc_textarea($room->description) . '</textarea><br>';
-        echo '<label>Amenities:</label> <input type="text" name="amenities" value="' . esc_attr($room->amenities) . '"><br>';
-        echo '<label>Price:</label> <input type="number" step="0.01" name="price" value="' . esc_attr($room->price) . '" required><br>';
-        echo '<label>Max Occupancy:</label> <input type="number" name="max_occupancy" value="' . esc_attr($room->max_occupancy) . '" required><br>';
-        echo '<button type="submit" name="update_room">Update Room</button>';
-        echo '<button type="submit" name="delete_room" onclick="return confirm(\'Are you sure you want to delete this room?\')">Delete Room</button>';
-        echo '</form>';
+        $room = $wpdb->get_row($wpdb->prepare("SELECT * FROM Rooms WHERE room_id = %d", intval($_POST['room_id'])));
+        if ($room) {
+            echo '<h3>Edit Room</h3><form method="post" style="max-width: 600px; margin: 0 auto;">';
+            echo "<input type='hidden' name='room_id' value='{$room->room_id}'>";
+            echo '<label>Room Type:</label> <input type="text" name="room_type" value="' . esc_attr($room->room_type) . '" required><br>';
+            echo '<label>Description:</label> <textarea name="description" required>' . esc_textarea($room->description) . '</textarea><br>';
+            echo '<label>Amenities:</label> <input type="text" name="amenities" value="' . esc_attr($room->amenities) . '"><br>';
+            echo '<label>Price Per Night:</label> <input type="number" step="0.01" name="price_per_night" value="' . esc_attr($room->price_per_night) . '" required><br>';
+            echo '<label>Max Occupancy:</label> <input type="number" name="max_occupancy" value="' . esc_attr($room->max_occupancy) . '" required><br>';
+            echo '<button type="submit" name="update_room">Update Room</button>';
+            echo '<button type="submit" name="delete_room" onclick="return confirm(\'Are you sure you want to delete this room?\')">Delete Room</button>';
+            echo '</form>';
+        }
     }
 
     if (isset($_POST['update_room'])) {
-        $wpdb->update('hotel_rooms', [
+        // Update room details
+        $wpdb->update('Rooms', [
             'room_type' => sanitize_text_field($_POST['room_type']),
             'description' => sanitize_textarea_field($_POST['description']),
             'amenities' => sanitize_text_field($_POST['amenities']),
-            'price' => floatval($_POST['price']),
+            'price_per_night' => floatval($_POST['price_per_night']),
             'max_occupancy' => intval($_POST['max_occupancy']),
-        ], ['id' => intval($_POST['room_id'])]);
+        ], ['room_id' => intval($_POST['room_id'])]);
         echo '<p>Room updated successfully!</p>';
     }
 
     if (isset($_POST['delete_room'])) {
-        $wpdb->delete('hotel_rooms', ['id' => intval($_POST['room_id'])]);
+        // Delete room
+        $wpdb->delete('Rooms', ['room_id' => intval($_POST['room_id'])]);
         echo '<p>Room deleted successfully!</p>';
     }
 }
+
+
 
 // Booking Management Section
 function display_customer_information_section() {
@@ -301,7 +308,7 @@ function display_customer_information_section() {
     echo '<h3>Booking Management</h3>';
 
     // Search option to find a specific booking by ID
-    echo '<form method="post">';
+    echo '<form method="post" style="max-width: 600px; margin: 0 auto;">';
     echo '<label>Enter Booking ID to Search:</label>';
     echo '<input type="number" name="search_booking_id" required>';
     echo '<button type="submit" name="search_booking">Search</button>';
@@ -312,30 +319,30 @@ function display_customer_information_section() {
         $booking_id = intval($_POST['search_booking_id']);
         display_booking_details($booking_id);
     } else {
-        // Display a list of all bookings excluding 'cancelled' and 'checked-out' statuses
-        $bookings = $wpdb->get_results("SELECT * FROM hotel_bookings WHERE status NOT IN ('cancelled', 'checked-out')");
+        // Display a list of all bookings excluding 'Cancelled' and 'Checked-Out' statuses
+        $bookings = $wpdb->get_results("SELECT * FROM Bookings WHERE status NOT IN ('Cancelled', 'Checked-Out')");
 
         echo '<h4>All Active Bookings</h4>';
         if ($bookings) {
             foreach ($bookings as $booking) {
-                echo "<div style='border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;'>";
-                echo "<p><strong>Booking ID:</strong> {$booking->id}</p>";
+                echo "<div style='border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; max-width: 800px; margin: 0 auto;'>";
+                echo "<p><strong>Booking ID:</strong> {$booking->booking_id}</p>";
                 echo "<p><strong>User ID:</strong> {$booking->user_id}</p>";
                 echo "<p><strong>Room ID:</strong> {$booking->room_id}</p>";
                 echo "<p><strong>Check-in Date:</strong> {$booking->check_in_date}</p>";
                 echo "<p><strong>Check-out Date:</strong> {$booking->check_out_date}</p>";
-                echo "<p><strong>Total Price:</strong> \${$booking->total_price}</p>";
+                echo "<p><strong>Total Cost:</strong> \${$booking->total_cost}</p>";
                 echo "<p><strong>Status:</strong> {$booking->status}</p>";
                 
                 // Form to update booking status
                 echo '<form method="post">';
-                echo "<input type='hidden' name='booking_id' value='{$booking->id}'>";
+                echo "<input type='hidden' name='booking_id' value='{$booking->booking_id}'>";
                 echo '<label>Update Status:</label>';
                 echo '<select name="new_status">';
-                echo '<option value="confirmed"' . selected($booking->status, 'confirmed', false) . '>Confirmed</option>';
-                echo '<option value="checked-in"' . selected($booking->status, 'checked-in', false) . '>Checked-in</option>';
-                echo '<option value="checked-out"' . selected($booking->status, 'checked-out', false) . '>Checked-out</option>';
-                echo '<option value="cancelled"' . selected($booking->status, 'cancelled', false) . '>Cancelled</option>';
+                echo '<option value="Confirmed"' . selected($booking->status, 'Confirmed', false) . '>Confirmed</option>';
+                echo '<option value="Checked-In"' . selected($booking->status, 'Checked-In', false) . '>Checked-In</option>';
+                echo '<option value="Checked-Out"' . selected($booking->status, 'Checked-Out', false) . '>Checked-Out</option>';
+                echo '<option value="Cancelled"' . selected($booking->status, 'Cancelled', false) . '>Cancelled</option>';
                 echo '</select>';
                 echo '<button type="submit" name="update_status">Update Status</button>';
                 echo '</form>';
@@ -351,8 +358,8 @@ function display_customer_information_section() {
         $booking_id = intval($_POST['booking_id']);
         $new_status = sanitize_text_field($_POST['new_status']);
         
-        // Update booking status in the hotel_bookings table
-        $wpdb->update('hotel_bookings', ['status' => $new_status], ['id' => $booking_id]);
+        // Update booking status in the Bookings table
+        $wpdb->update('Bookings', ['status' => $new_status], ['booking_id' => $booking_id]);
         echo "<p>Booking ID {$booking_id} status updated to '{$new_status}' successfully!</p>";
     }
 }
@@ -361,33 +368,36 @@ function display_customer_information_section() {
 function display_booking_details($booking_id) {
     global $wpdb;
 
-    $booking = $wpdb->get_row("SELECT * FROM hotel_bookings WHERE id = $booking_id");
+    $booking = $wpdb->get_row($wpdb->prepare("SELECT * FROM Bookings WHERE booking_id = %d", $booking_id));
 
     if ($booking) {
+        echo "<div style='border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; max-width: 800px; margin: 0 auto;'>";
         echo "<h4>Booking Details for Booking ID {$booking_id}</h4>";
         echo "<p><strong>User ID:</strong> {$booking->user_id}</p>";
         echo "<p><strong>Room ID:</strong> {$booking->room_id}</p>";
         echo "<p><strong>Check-in Date:</strong> {$booking->check_in_date}</p>";
         echo "<p><strong>Check-out Date:</strong> {$booking->check_out_date}</p>";
-        echo "<p><strong>Total Price:</strong> \${$booking->total_price}</p>";
+        echo "<p><strong>Total Cost:</strong> \${$booking->total_cost}</p>";
         echo "<p><strong>Status:</strong> {$booking->status}</p>";
 
         // Update status for specific booking
         echo '<form method="post">';
-        echo "<input type='hidden' name='booking_id' value='{$booking->id}'>";
+        echo "<input type='hidden' name='booking_id' value='{$booking->booking_id}'>";
         echo '<label>Update Status:</label>';
         echo '<select name="new_status">';
-        echo '<option value="confirmed"' . selected($booking->status, 'confirmed', false) . '>Confirmed</option>';
-        echo '<option value="checked-in"' . selected($booking->status, 'checked-in', false) . '>Checked-in</option>';
-        echo '<option value="checked-out"' . selected($booking->status, 'checked-out', false) . '>Checked-out</option>';
-        echo '<option value="cancelled"' . selected($booking->status, 'cancelled', false) . '>Cancelled</option>';
+        echo '<option value="Confirmed"' . selected($booking->status, 'Confirmed', false) . '>Confirmed</option>';
+        echo '<option value="Checked-In"' . selected($booking->status, 'Checked-In', false) . '>Checked-In</option>';
+        echo '<option value="Checked-Out"' . selected($booking->status, 'Checked-Out', false) . '>Checked-Out</option>';
+        echo '<option value="Cancelled"' . selected($booking->status, 'Cancelled', false) . '>Cancelled</option>';
         echo '</select>';
         echo '<button type="submit" name="update_status">Update Status</button>';
         echo '</form>';
+        echo "</div>";
     } else {
         echo "<p>Booking not found. Please enter a valid Booking ID.</p>";
     }
 }
+
 
 
 function display_user_management_section() {
@@ -396,75 +406,64 @@ function display_user_management_section() {
     echo '<h3>User Management</h3>';
 
     // Search for a specific user by ID or email
-    echo '<form method="post">';
+    echo '<form method="post" style="max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 8px;">';
     echo '<label>Enter User ID or Email to Search:</label>';
-    echo '<input type="text" name="search_user" required>';
-    echo '<button type="submit" name="search_user_btn">Search</button>';
+    echo '<input type="text" name="search_user" style="width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ccc; border-radius: 4px;" required>';
+    echo '<button type="submit" name="search_user_btn" style="width: 100%; padding: 10px; margin-top: 15px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">Search</button>';
     echo '</form>';
 
     // Display specific user details if searched
     if (isset($_POST['search_user_btn'])) {
         $search_user = sanitize_text_field($_POST['search_user']);
-        $user = $wpdb->get_row("SELECT * FROM hotel_users WHERE id = '$search_user' OR email = '$search_user'");
+        $user = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * FROM Users WHERE user_id = %s OR email = %s",
+                $search_user,
+                $search_user
+            )
+        );
 
         if ($user) {
             display_user_details($user);
         } else {
-            echo "<p>User not found. Please enter a valid User ID or Email.</p>";
+            echo "<div style='max-width: 600px; margin: 20px auto; padding: 15px; background-color: #fff; border: 1px solid #e74c3c; color: #e74c3c; border-radius: 8px;'>User not found. Please enter a valid User ID or Email.</div>";
         }
-    } else {
-        // Display all users with options to manage them
-        $users = $wpdb->get_results("SELECT * FROM hotel_users LIMIT 10");
-
-        echo '<h4>All Users</h4>';
-        foreach ($users as $user) {
-            echo "<div style='border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;'>";
-            echo "<p><strong>User ID:</strong> {$user->id}</p>";
-            echo "<p><strong>Name:</strong> {$user->first_name} {$user->last_name}</p>";
-            echo "<p><strong>Email:</strong> {$user->email}</p>";
-            echo "<form method='post'>";
-            echo "<input type='hidden' name='user_id' value='{$user->id}'>";
-            echo '<label>New Password:</label> <input type="password" name="new_password" required>';
-            echo '<button type="submit" name="update_password">Update Password</button>';
-            echo '</form>';
-            echo "</div>";
-        }
-    }
-
-    // Handle password update action
-    if (isset($_POST['update_password'])) {
-        $user_id = intval($_POST['user_id']);
-        $new_password = sanitize_text_field($_POST['new_password']);
-        update_user_password($user_id, $new_password);
     }
 }
 
 // Function to display individual user details
 function display_user_details($user) {
-    echo "<h4>User Details</h4>";
-    echo "<p><strong>User ID:</strong> {$user->id}</p>";
+    echo "<div style='max-width: 600px; margin: 20px auto; padding: 20px; background-color: #ffffff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 8px;'>";
+    echo "<h4 style='margin-bottom: 20px;'>User Details</h4>";
+    echo "<p><strong>User ID:</strong> {$user->user_id}</p>";
     echo "<p><strong>Name:</strong> {$user->first_name} {$user->last_name}</p>";
     echo "<p><strong>Email:</strong> {$user->email}</p>";
+    echo "<p><strong>Role:</strong> {$user->role}</p>";
     echo "<p><strong>Created At:</strong> {$user->created_at}</p>";
     echo "<p><strong>Updated At:</strong> {$user->updated_at}</p>";
 
     // Form to reset password
-    echo '<form method="post">';
-    echo "<input type='hidden' name='user_id' value='{$user->id}'>";
-    echo '<label>New Password:</label> <input type="password" name="new_password" required>';
-    echo '<button type="submit" name="update_password">Update Password</button>';
+    echo '<form method="post" style="max-width: 550px;margin-top: 20px;">';
+    echo "<input type='hidden' name='user_id' value='{$user->user_id}'>";
+    echo '<label>New Password:</label>';
+    echo '<input type="password" name="new_password" style="width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ccc; border-radius: 4px;" required>';
+    echo '<button type="submit" name="update_password" style="width: 100%; padding: 10px; margin-top: 15px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">Update Password</button>';
     echo '</form>';
+    echo "</div>";
 }
 
-// Function to update user password with a manually entered password
+// Function to update user password
 function update_user_password($user_id, $new_password) {
     global $wpdb;
-    $hashed_password = wp_hash_password($new_password);
 
     // Update the user's password in the database
-    $wpdb->update('hotel_users', ['password' => $hashed_password], ['id' => $user_id]);
+    $wpdb->update(
+        'Users',
+        ['password_hash' => wp_hash_password($new_password)],
+        ['user_id' => $user_id]
+    );
 
-    echo "<p>Password updated successfully for User ID {$user_id}.</p>";
+    echo "<div style='max-width: 600px; margin: 20px auto; padding: 15px; background-color: #eafaf1; border: 1px solid #27ae60; color: #27ae60; border-radius: 8px;'>Password updated successfully for User ID {$user_id}.</div>";
 }
 
 
@@ -473,28 +472,42 @@ function display_reports_analytics_section() {
     global $wpdb;
 
     // Total bookings
-    $total_bookings = $wpdb->get_var("SELECT COUNT(*) FROM hotel_bookings");
+    $total_bookings = $wpdb->get_var("SELECT COUNT(*) FROM Bookings");
 
     // Most booked room
-    $most_booked_room = $wpdb->get_var("SELECT room_id FROM hotel_bookings GROUP BY room_id ORDER BY COUNT(*) DESC LIMIT 1");
+    $most_booked_room = $wpdb->get_var("
+        SELECT room_id 
+        FROM Bookings 
+        GROUP BY room_id 
+        ORDER BY COUNT(*) DESC 
+        LIMIT 1
+    ");
 
     // Total revenue from confirmed and checked-in bookings
-    $revenue = $wpdb->get_var("SELECT SUM(total_price) FROM hotel_bookings WHERE status IN ('confirmed', 'checked-in')");
+    $revenue = $wpdb->get_var("
+        SELECT SUM(total_cost) 
+        FROM Bookings 
+        WHERE status IN ('confirmed', 'checked-in')
+    ");
 
     // Monthly booking trends
     $monthly_bookings = $wpdb->get_results("
-        SELECT DATE_FORMAT(booking_created_at, '%Y-%m') AS month, COUNT(*) AS count 
-        FROM hotel_bookings 
+        SELECT DATE_FORMAT(created_at, '%Y-%m') AS month, COUNT(*) AS count 
+        FROM Bookings 
         GROUP BY month 
         ORDER BY month DESC 
         LIMIT 12
     ");
 
     // Room occupancy rate (percentage of occupied rooms)
-    $total_rooms = $wpdb->get_var("SELECT COUNT(*) FROM hotel_rooms");
-    $occupied_rooms = $wpdb->get_var("SELECT COUNT(DISTINCT room_id) FROM hotel_bookings WHERE status IN ('confirmed', 'checked-in')");
+    $total_rooms = $wpdb->get_var("SELECT COUNT(*) FROM Rooms");
+    $occupied_rooms = $wpdb->get_var("
+        SELECT COUNT(DISTINCT room_id) 
+        FROM Bookings 
+        WHERE status IN ('confirmed', 'checked-in')
+    ");
     $occupancy_rate = $total_rooms > 0 ? round(($occupied_rooms / $total_rooms) * 100, 2) : 0;
-    
+
     // Display analytics
     echo "<h3>Analytics</h3>";
     echo "<p><strong>Total Bookings:</strong> {$total_bookings}</p>";
@@ -514,7 +527,7 @@ function display_reports_analytics_section() {
     } else {
         echo "<p>No booking data available for the past year.</p>";
     }
-
 }
+
 
 ?>

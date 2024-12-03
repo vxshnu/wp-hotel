@@ -3,190 +3,174 @@
  * Plugin Name: Booking Confirmation
  * Description: Hotel Booking Confirmation
  * Author: Vishnu Narayanan
- * Version: 1.0.0
+ * Version: 1.3.2
  * Text Domain: hotel-booking-confirmation
  */
 
-if( !defined('ABSPATH')) {
-    exit;
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly
 }
 
-global $last_booking_id;
-
-//hook to capture the booking ID after payment
-add_action('after_payment', function($bookingid) use (&$last_booking_id) {
-    $last_booking_id = $bookingid;
-});
-
-//shortcode to generate the receipt
+// Shortcode to generate the receipt
 function receipt_shortcode() {
-    global $last_booking_id;
-    //if page is receipt page then call the generate_receipt function
-    if (is_page('receipt')) {
-        generate_receipt($last_booking_id);
-    } 
+    if (isset($_GET['booking_id']) && intval($_GET['booking_id'])) {
+        $booking_id = intval($_GET['booking_id']);
+        generate_receipt($booking_id);
+    } else {
+        echo "<p>No booking details found. Please contact support.</p>";
+    }
 }
-
 add_shortcode('receipt', 'receipt_shortcode');
 
-//function to call the email generation and receipt displaying
-function generate_receipt($bookingid)
-{
+// Generate receipt and send email
+function generate_receipt($booking_id) {
     global $wpdb;
-    if ($bookingid) {
-        $query = $wpdb->prepare("SELECT full_name, email, phno, amount, total_rooms, from_date, till_date FROM hotel_booking WHERE booking_id = %d", $bookingid);
-        $result = $wpdb->get_row($query, ARRAY_A);
-        if ($result) {
-            display_receipt($bookingid, $result['full_name'], $result['phno'], $result['amount'], $result['total_rooms'], $result['from_date'], $result['till_date']);
-            send_mail($bookingid, $result['full_name'],$result['email'] , $result['phno'], $result['amount'], $result['total_rooms'], $result['from_date'], $result['till_date']);
-        }
+
+    // Fetch booking details
+    $query = $wpdb->prepare("
+        SELECT 
+            B.booking_id,
+            CONCAT(U.first_name, ' ', U.last_name) AS full_name,
+            U.phone,
+            U.email, -- Fetch email address
+            B.room_id,
+            B.total_cost,
+            B.check_in_date,
+            B.check_out_date,
+            B.special_requests
+        FROM Bookings AS B
+        JOIN Users AS U ON B.user_id = U.user_id
+        WHERE B.booking_id = %d
+    ", $booking_id);
+
+    $result = $wpdb->get_row($query, ARRAY_A);
+
+    if ($result) {
+        // Display the receipt
+        display_receipt(
+            $result['booking_id'],
+            $result['full_name'],
+            $result['phone'],
+            $result['total_cost'],
+            $result['room_id'],
+            $result['check_in_date'],
+            $result['check_out_date']
+        );
+
+        // Send the receipt via email
+        send_mail(
+            $result['booking_id'],
+            $result['full_name'],
+            $result['phone'],
+            $result['total_cost'],
+            $result['room_id'],
+            $result['check_in_date'],
+            $result['check_out_date'],
+            $result['email'] // Pass email address to the mail function
+        );
+    } else {
+        echo "<p>Error retrieving booking details. Please contact support.</p>";
     }
 }
 
-//fetches the rooms that user booked
-function fetch_reserved_rooms($bookingid) {
-    global $wpdb;
-    $query = $wpdb->prepare("SELECT roomid FROM reserved_rooms WHERE bookingid = %d", $bookingid);
-    $result = $wpdb->get_col($query); 
-    return $result; 
-}
+function send_mail($booking_id, $name, $phone, $total_cost, $rooms, $check_in_date, $check_out_date, $email) {
+    $to = $email; // Use retrieved email address
+    $subject = "Booking Confirmation - Booking ID #$booking_id";
 
-//sends mail to the customer with the receipt details
-function send_mail($bookingid, $name, $email, $phno, $amount, $rooms, $from, $till){
-    $to = $email;
-    $reserved_rooms = fetch_reserved_rooms($bookingid);
-    $subject = 'Hotel Booking Confirmation';
+    // Inline styles and HTML for the email
     $message = "<!DOCTYPE html>
     <html>
     <head>
         <meta charset='UTF-8'>
-        <title>Hotel Receipt</title>
-        <style>
-            .receipt {
-                border: 1px solid #ccc;
-                border-radius: 5px;
-                padding: 20px;
-                margin: 20px auto;
-                background-color: #f9f9f9;
-                font-family: Arial, sans-serif;
-                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-                width: 90%;
-                max-width: 800px;
-            }
-            .receipt h2 {
-                color: #333;
-                font-size: 45px;
-                margin: 20px 0 15px;
-                text-align: center;
-                font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-            }
-            .receipt p {
-                color: #555;
-                line-height: 1.5;
-            }
-            .receipt strong {
-                color: #000;
-            }
-            #hotel-logo {
-                width: 10%;
-                display: block;
-                margin: 0 auto 20px;
-            }
-            .hotel-info {
-                border-bottom: 2px solid black;
-                text-align: center; 
-                margin-bottom: 20px;
-            }
-            .reservation-details {
-                width: 100%;
-                border-bottom: 2px solid black;
-            }
-            .page-end {
-                border-bottom: 2px solid black;
-                text-align: left; 
-                padding-left: 20px; 
-                font-size: 14px;
-                font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-            }
-            .page-mid {
-                text-align: left; 
-                padding-left: 20px; 
-                font-size: 18px;
-            }
-        </style>
+        <title>Booking Confirmation</title>
     </head>
-    <body>
-        <div class='receipt'> 
-
-            <div class='hotel-info'>
-                <h3 style='margin: 0; font-size: 24px;'>Hotel Name</h3>
-                <p style='margin: 5px 0;'>123 Hotel Street</p>
-                <p style='margin: 5px 0;'>City, State, Zip Code</p>
-                <p style='margin: 5px 0;'>Phone: (123) 456-7890</p>
-                <p style='margin: 5px 0;'>Email: info@hotelname.com</p>
+    <body style='margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f9f9f9;'>
+        <div class='receipt' style='max-width: 900px; margin: 20px auto; padding: 20px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); font-family: Arial, sans-serif;'>
+            <!-- Logo and Hotel Information -->
+            <div class='hotel-header' style='text-align: center; margin-bottom: 20px;'>
+                <img src='https://example.com/path/to/your/logo.png' alt='Hotel Logo' style='width: 80px; margin-bottom: 10px;'/>
+                <h1 style='font-size: 28px; margin: 5px 0;'>Luxury Stay Hotel</h1>
+                <p>123 Hotel Street, City, State, Zip Code</p>
+                <p>Phone: (123) 456-7890 | Email: info@hotelname.com</p>
             </div>
-            <div class='reservation-details'>
-                <h2 style='text-align: center;'>RECEIPT</h2>
-                <div style='text-align: left; padding-left: 20px; font-size: 18px;'>
-                    <p><strong>Booking ID:</strong> " . esc_html($bookingid) . "</p>
-                    <p style='display:inline; margin-right: 40%;'><strong>Name:</strong> " . esc_html($name) . "</p>
-                    <p><strong>Phone Number:</strong> <span>" . esc_html($phno) . "</span></p>
-                    <p><strong>Total number of rooms booked:</strong> " . esc_html($rooms) . "</p>
-                    <p><strong>From Date:</strong> " . esc_html($from) . "</p>
-                    <p><strong>Till Date:</strong> " . esc_html($till) . "</p>
-                    <p><strong>Room Number:</strong> " . implode(", ", $reserved_rooms) . "</p>
-                </div>
-                <p class='page-mid'><strong>Total Amount Paid:</strong> $" . esc_html($amount) . "</p>
-                <p class='page-mid'><strong>Payment Method:</strong> Online</p>
+            
+            <!-- Separator -->
+            <hr style='border: none; border-top: 1px solid #333; margin: 20px 0;'/>
+            
+            <!-- Receipt Details -->
+            <div style='padding: 20px;'>
+                <p><strong>Booking ID:</strong> $booking_id</p>
+                <p><strong>Name:</strong> $name</p>
+                <p><strong>Phone:</strong> $phone</p>
+                <p><strong>Total Cost:</strong> $$total_cost</p>
+                <p><strong>Check-In Date:</strong> $check_in_date</p>
+                <p><strong>Check-Out Date:</strong> $check_out_date</p>
+                <p><strong>Room Numbers:</strong> $rooms</p>
             </div>
-            <div class='page-end'>
+            
+            <!-- Separator -->
+            <hr style='border: none; border-top: 1px solid #333; margin: 20px 0;'/>
+            
+            <!-- Footer -->
+            <div class='page-end' style='margin-top: 20px; text-align: center;'>
                 <p>Note: A cleaning fee may apply if additional cleaning is required after check-out.</p>
                 <p><strong>Thank you for choosing us for your upcoming stay! We look forward to welcoming you soon!</strong></p>
             </div>
         </div>
     </body>
     </html>";
-    $headers = array('Content-Type: text/html; charset=UTF-8');
-    //use an appropriate mail plugin from wordpressK
-    wp_mail($email, $subject, $message, $headers);
+
+    // Email headers
+    $headers = [
+        'Content-Type: text/html; charset=UTF-8',
+        'From: Luxury Stay Hotel <no-reply@hotelname.com>'
+    ];
+
+    // Send the email
+    wp_mail($to, $subject, $message, $headers);
 }
 
-//displays the receipt
-function display_receipt($bookingid, $name, $phno, $amount, $rooms, $from, $till) {
+
+
+function display_receipt($booking_id, $name, $phone, $total_cost, $rooms, $check_in_date, $check_out_date) {
     $css_url = plugins_url('styles/style.css', __FILE__);
     echo '<link rel="stylesheet" type="text/css" href="' . esc_url($css_url) . '">';
-    echo "<div class='receipt'>"; 
+
     $image_url = plugins_url('styles/hotel-png-11554023271eafhegd6i5.png', __FILE__);
-    echo '<img src="' . esc_url($image_url) . '" alt="Your Image" id="hotel-logo" style="margin-bottom: 20px;"/>';
-    // Hotel Information Section
-    echo "<div class='hotel-info'>";
-    echo "<h3 style='margin: 0; font-size: 24px;'>Hotel Name</h3>";
-    echo "<p style='margin: 5px 0;'>123 Hotel Street</p>";
-    echo "<p style='margin: 5px 0;'>City, State, Zip Code</p>";
-    echo "<p style='margin: 5px 0;'>Phone: (123) 456-7890</p>";
-    echo "<p style='margin: 5px 0;'>Email: info@hotelname.com</p>";
+    echo "<div class='receipt' style='max-width: 900px; margin: 20px auto; padding: 20px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); font-family: Arial, sans-serif;'>";
+
+    // Logo and Hotel Information
+    echo "<div class='hotel-header' style='text-align: center; margin-bottom: 20px;'>";
+    echo '<img src="' . esc_url($image_url) . '" alt="Hotel Logo" style="width: 80px; margin-bottom: 10px;"/>';
+    echo "<h1 style='font-size: 28px; margin: 5px 0;'>Luxury Stay Hotel</h1>";
+    echo "<p>123 Hotel Street, City, State, Zip Code</p>";
+    echo "<p>Phone: (123) 456-7890 | Email: info@hotelname.com</p>";
     echo "</div>";
-    // Receipt information
-    echo "<div class='reservation-details'>";
-    echo "<h2 style='text-align: center;'>RECEIPT</h2>"; 
-    echo "<div style='text-align: left; padding-left: 20px; font-size: 18px;'>";
-    echo "<p><strong>Booking ID:</strong> {$bookingid}</p>";
-    echo "<p style='display:inline; margin-right: 53%;'><strong>Name:</strong> {$name} </p>";
-    echo "<p id='phno'><strong>Phone Number:</strong> <span>{$phno}</span></p>";
-    echo "<p><strong>Total number of rooms booked:</strong> {$rooms}</p>";
-    echo "<p><strong>From Date:</strong> {$from}</p>"; 
-    echo "<p><strong>Till Date:</strong> {$till}</p>";
-    //get the reserved room ids
-    $reserved_rooms = fetch_reserved_rooms($bookingid);
-    echo "<p><strong>Room Number:</strong> " . implode(", ", $reserved_rooms) . "</p>";
+
+    // Separator after hotel details
+    echo "<hr style='border: none; border-top: 1px solid #333; margin: 20px 0;'>";
+
+    // Receipt Details
+    echo "<div style='padding: 20px;'>";
+    echo "<p><strong>Booking ID:</strong> $booking_id</p>";
+    echo "<p><strong>Name:</strong> $name</p>";
+    echo "<p><strong>Phone:</strong> $phone</p>";
+    echo "<p><strong>Total Cost:</strong> $$total_cost</p>";
+    echo "<p><strong>Check-In Date:</strong> $check_in_date</p>";
+    echo "<p><strong>Check-Out Date:</strong> $check_out_date</p>";
+    echo "<p><strong>Room Numbers:</strong> $rooms </p>";
     echo "</div>";
-    echo "<p class='page-mid'><strong>Total Amount Paid:</strong> \${$amount}</p>";
-    echo "<p class='page-mid'><strong>Payment Method:</strong> Online</p>";
-    echo "</div>";
-    echo "<div class='page-end'>";
+
+    // Separator after room booked details
+    echo "<hr style='border: none; border-top: 1px solid #333; margin: 20px 0;'>";
+
+    // Footer with Home Button
+    echo "<div class='page-end' style='margin-top: 20px; text-align: center;'>";
     echo "<p>Note: A cleaning fee may apply if additional cleaning is required after check-out.</p>";
     echo "<p><strong>Thank you for choosing us for your upcoming stay! We look forward to welcoming you soon!</strong></p>";
+    echo "<a href='" . home_url() . "' style='display: inline-block; margin-top: 20px; margin-bottom: 20px; padding: 10px 20px; background-color: #007BFF; color: #fff; text-decoration: none; border-radius: 5px;'>Go Back to Home</a>";
     echo "</div>";
+
     echo "</div>";
 }
 
